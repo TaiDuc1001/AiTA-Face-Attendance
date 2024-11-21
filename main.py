@@ -2,13 +2,13 @@ from manager import student_embedding_left_config, student_embedding_middle_conf
 from manager import Manager
 import weaviate
 
-from config import weaviate_config, resnet_config, yolo_config
+from config import db_cfg, detector_cfg, recognizer_cfg
 
 def main():
     client = weaviate.Client(
         embedded_options = weaviate.EmbeddedOptions(
-            host = weaviate_config.host,
-            port = weaviate_config.port
+            host = db_cfg.host,
+            port = db_cfg.port
         )
     )
     manager = Manager(client=client)
@@ -17,5 +17,5 @@ def main():
     manager.create_class(student_embedding_middle_config)
     manager.create_class(student_embedding_right_config)
 
-    extractor = resnet_config.model
-    detector = yolo_config.model
+    extractor = recognizer_cfg.model
+    detector = detector_cfg.model

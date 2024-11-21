@@ -1,20 +1,29 @@
-from .database import weaviate_config
 from .base import BaseConfig
-from .recognition_model import resnet_config
-from .detection_model import yolo_config
+import yaml
+from model import resnet, yolo11n
 
-class WeaviateConfig(BaseConfig):
-    def __init__(self):
-        super().__init__(weaviate_config)
+config_path = 'config.yaml'
+with open(config_path, 'r') as file:
+    config = yaml.safe_load(file)
 
-class RecognitionModelConfig(BaseConfig):
-    def __init__(self):
-        super().__init__(resnet_config)
+class DatabaseConfig(BaseConfig):
+    def __init__(self, **kwargs):
+        super().__init__(config['VectorDatabase'])
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
-class DetectionModelConfig(BaseConfig):
-    def __init__(self):
-        super().__init__(yolo_config)
+class DetectorConfig(BaseConfig):
+    def __init__(self, **kwargs):
+        super().__init__(config['Detector'])
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
-weaviate_config = WeaviateConfig()
-resnet_config = RecognitionModelConfig()
-yolo_config = DetectionModelConfig()
+class RecognizerConfig(BaseConfig):
+    def __init__(self, **kwargs):
+        super().__init__(config['Recognizer'])
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+db_cfg = DatabaseConfig()
+detector_cfg = DetectorConfig(model=yolo11n)
+recognizer_cfg = RecognizerConfig(model=resnet)
