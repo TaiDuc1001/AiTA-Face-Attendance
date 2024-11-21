@@ -1,0 +1,11 @@
+Detector:
+  name: 'yolo11n'
+  path: '/kaggle/input/gender-face-detection/pytorch/e100-b128/1/best (1).pt'
+
+Recognizer:
+  name: 'resnet'
+
+VectorDatabase:
+  name: 'weaviate'
+  hostname: '127.0.0.1'
+  port: 8079
