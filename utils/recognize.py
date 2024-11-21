@@ -1,8 +1,7 @@
 import torch
 import cv2
-from typing import List
+from typing import List, Union
 from rich import print as rprint
-import numpy as np
 import base64
 
 def preprocess(image_path: str,
@@ -16,7 +15,14 @@ def preprocess(image_path: str,
     image = torch.Tensor([image]).permute(0, 3, 1, 2)
     return image
 
-def postprocess(embedding: torch.Tensor) -> np.ndarray:
+def postprocess(embeddings: Union[List[torch.Tensor], torch.Tensor]) -> Union[List[str], str]:
+    if isinstance(embeddings, List):
+        embeddings = [postprocess(embedding) for embedding in embeddings]
+        return embeddings
+    
+    embedding = embeddings
+    if not isinstance(embedding, torch.Tensor):
+        embedding = torch.Tensor(embedding)
     embedding = embedding.cpu().detach().numpy().squeeze()
     embedding = base64.b64encode(embedding.tobytes()).decode('utf-8')
     return embedding
