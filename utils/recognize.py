@@ -1,7 +1,7 @@
 import torch
 import cv2
 from typing import List, Union
-from rich import print as rprint
+from rich import print
 import base64
 
 def preprocess(image_path: str,
@@ -10,7 +10,7 @@ def preprocess(image_path: str,
     image = cv2.imread(image_path)
     if cropBox:
         image = image[cropBox[2]: cropBox[4], cropBox[1]: cropBox[3]]
-        rprint(f'[bold blue]Found cropBox: {cropBox}[/bold green]. Cropping image...')
+        print(f'[bold blue]Found cropBox: {cropBox}[/bold green]. Cropping image...')
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = torch.Tensor([image]).permute(0, 3, 1, 2)
     return image
