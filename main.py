@@ -1,7 +1,7 @@
 from manager import student_embedding_left_config, student_embedding_middle_config, student_embedding_right_config, student_info_config
 from manager import Manager
 import weaviate
-
+from utils import *
 from config import db_cfg, detector_cfg, recognizer_cfg
 
 def main():
