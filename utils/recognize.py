@@ -6,11 +6,12 @@ import base64
 
 def preprocess(image_path: str,
                cropBox: List[int] = None,
-               ) -> torch.Tensor:
+               verbose: bool = False) -> torch.Tensor:
     image = cv2.imread(image_path)
     if cropBox:
         image = image[cropBox[1]: cropBox[3], cropBox[0]: cropBox[2]]
-        print(f'[bold green]Found cropBox: {cropBox}[/bold green]. Cropping image...')
+        if verbose:
+            print(f'[bold green]Found cropBox: {cropBox}[/bold green]. Cropping image...')
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = torch.Tensor([image]).permute(0, 3, 1, 2)
     return image

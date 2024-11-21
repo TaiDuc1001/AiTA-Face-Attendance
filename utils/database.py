@@ -1,7 +1,9 @@
 from weaviate import Client
 from rich import print
 
-def create_class(config: dict, client: Client) -> None:
+def create_class(config: dict, 
+                 client: Client,
+                 verbose: bool = True) -> None:
     if client.schema.exists(class_name=config['class']):
         client.schema.delete_class(class_name=config['class'])
     client.schema.create_class(config)
