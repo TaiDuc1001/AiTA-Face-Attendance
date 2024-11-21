@@ -1,6 +1,6 @@
-from client import client, create_class, create_data_object
 from schemas import student_embedding_left_config, student_embedding_middle_config, student_embedding_right_config, student_info_config
 from weaviate import Client
+from utils import create_class, create_data_object
 
 class Manager:
     def __init__(self, client: Client):
