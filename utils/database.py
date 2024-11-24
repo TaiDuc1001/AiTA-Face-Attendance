@@ -7,7 +7,8 @@ def create_class(config: dict,
     if client.schema.exists(class_name=config['class']):
         client.schema.delete_class(class_name=config['class'])
     client.schema.create_class(config)
-    print(f'[bold green]Created class {config["class"]}[/bold green]')
+    if verbose:
+        print(f'[bold green]Created class {config["class"]}[/bold green]')
 
 def create_data_object(
         class_name: str, 
