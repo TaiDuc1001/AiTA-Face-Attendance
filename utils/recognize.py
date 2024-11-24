@@ -25,5 +25,5 @@ def postprocess(embeddings: Union[List[torch.Tensor], torch.Tensor]) -> Union[Li
     if not isinstance(embedding, torch.Tensor):
         embedding = torch.Tensor(embedding)
     embedding = embedding.cpu().detach().numpy().squeeze()
-    embedding = base64.b64encode(embedding.tobytes()).decode('utf-8')
+    # embedding = base64.b64encode(embedding.tobytes()).decode('utf-8')
     return embedding
