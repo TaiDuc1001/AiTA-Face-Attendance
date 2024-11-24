@@ -1,11 +1,23 @@
 Detector:
-  name: 'yolo11n'
-  path: '/kaggle/input/gender-face-detection/pytorch/e100-b128/1/best (1).pt'
+  name: 'det_500m'
+  path: ''
+  names:
+    yolo11n: '/kaggle/input/gender-face-detection/pytorch/e100-b128/1/best (1).pt'
+    det_500m: '/kaggle/working/AiTA-Face-Attendance/buffalo_sc/det_500m.onnx'
 
 Recognizer:
-  name: 'resnet'
+  name: 'mobilefacenet'
+  names:
+    resnet50: ''
+    w600k_mbf: '/kaggle/working/AiTA-Face-Attendance/buffalo_sc/w600k_mbf.onnx'
 
 VectorDatabase:
   name: 'weaviate'
   hostname: '127.0.0.1'
   port: 8079
+  persistence_data_path: '/kaggle/working/database'
+
+ImageDatabase:
+  name: 'Faces'
+  names:
+    Faces: '/kaggle/input/face-recognition-dataset/Dataset/Faces'
