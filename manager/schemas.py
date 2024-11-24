@@ -28,11 +28,7 @@ student_embedding_left_config = {
             "dataType": ["text"],
             "indexSearchable": True,
             "indexFilterable": True
-        },
-        {
-            "name": "embedding",
-            "dataType": ["text"],
-        },
+        }
     ]
 }
 
@@ -45,11 +41,7 @@ student_embedding_middle_config = {
             "dataType": ["text"],
             "indexSearchable": True,
             "indexFilterable": True
-        },
-        {
-            "name": "embedding",
-            "dataType": ["text"],
-        },
+        }
     ]
 }
 
@@ -63,9 +55,6 @@ student_embedding_right_config = {
             "indexSearchable": True,
             "indexFilterable": True
         },
-        {
-            "name": "embedding",
-            "dataType": ["text"],
-        },
+
     ]
 }

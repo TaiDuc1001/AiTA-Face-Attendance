@@ -1,5 +1,6 @@
 from weaviate import Client
 from rich import print
+from typing import List
 
 def create_class(config: dict, 
                  client: Client,
@@ -14,6 +15,7 @@ def create_data_object(
         class_name: str, 
         data_object: dict, 
         identifier: str,
+        vector: List[float],
         client: Client) -> None:
     schema = client.schema.get()
     class_names = [c['class'] for c in schema['classes']]
@@ -48,9 +50,16 @@ def create_data_object(
             uuid=toDelID,
             class_name=class_name
         )
-        
-    client.data_object.create(
-        class_name=class_name,
-        data_object=data_object
-    )
+
+    if vector is not None:    
+        client.data_object.create(
+            class_name=class_name,
+            data_object=data_object,
+            vector=vector
+        )
+    else:
+        client.data_object.create(
+            class_name=class_name,
+            data_object=data_object
+        )
     

@@ -26,17 +26,38 @@ class Manager:
         }
         student_embedding_left = {
             'code': student_object.code,
-            'embedding': student_object.embeddings[0]
         }
         student_embedding_middle = {
             'code': student_object.code,
-            'embedding': student_object.embeddings[1]
         }
         student_embedding_right = {
             'code': student_object.code,
-            'embedding': student_object.embeddings[2]
         }
-        create_data_object(self.class_names[-1], student_info, identifier, self.client)
-        create_data_object(self.class_names[0], student_embedding_left, identifier, self.client)
-        create_data_object(self.class_names[1], student_embedding_middle, identifier, self.client)
-        create_data_object(self.class_names[2], student_embedding_right, identifier, self.client)
+        create_data_object(
+            class_name=self.class_names[-1],
+            data_object=student_info,
+            identifier=identifier,
+            vector=None,
+            client=self.client
+        )
+        create_data_object(
+            class_name=self.class_names[0],
+            data_object=student_embedding_left,
+            identifier=identifier,
+            vector=student_object.embeddings[0],
+            client=self.client
+        )
+        create_data_object(
+            class_name=self.class_names[1],
+            data_object=student_embedding_middle,
+            identifier=identifier,
+            vector=student_object.embeddings[1],
+            client=self.client
+        )
+        create_data_object(
+            class_name=self.class_names[2],
+            data_object=student_embedding_right,
+            identifier=identifier,
+            vector=student_object.embeddings[2],
+            client=self.client
+        )
