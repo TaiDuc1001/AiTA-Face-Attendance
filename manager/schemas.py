@@ -4,11 +4,13 @@ student_info_config = {
     "properties": [
         {
             "name": "name",
-            "dataType": ['text'],
+            "dataType": ["text"],
+            "indexSearchable": True,
+            "indexFilterable": True
         },
         {
             'name': 'gender',
-            'dataType': ['boolean'],
+            'dataType': ['boolean'], # 0 for man, 1 for woman
         },
     ]
 }
@@ -20,10 +22,12 @@ student_embedding_left_config = {
         {
             "name": "name",
             "dataType": ["text"],
+            "indexSearchable": True,
+            "indexFilterable": True
         },
         {
             "name": "embedding",
-            "dataType": ["blob"],
+            "dataType": ["text"],
         },
     ]
 }
@@ -35,10 +39,12 @@ student_embedding_middle_config = {
         {
             "name": "name",
             "dataType": ["text"],
+            "indexSearchable": True,
+            "indexFilterable": True
         },
         {
             "name": "embedding",
-            "dataType": ["blob"],
+            "dataType": ["text"],
         },
     ]
 }
@@ -50,10 +56,12 @@ student_embedding_right_config = {
         {
             "name": "name",
             "dataType": ["text"],
+            "indexSearchable": True,
+            "indexFilterable": True
         },
         {
             "name": "embedding",
-            "dataType": ["blob"],
+            "dataType": ["text"],
         },
     ]
 }
