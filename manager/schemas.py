@@ -5,6 +5,10 @@ student_info_config = {
         {
             "name": "name",
             "dataType": ["text"],
+        },
+        {
+            "name": "code",
+            "dataType": ["text"],
             "indexSearchable": True,
             "indexFilterable": True
         },
@@ -20,7 +24,7 @@ student_embedding_left_config = {
     "vectorizer": "none",
     "properties": [
         {
-            "name": "name",
+            "name": "code",
             "dataType": ["text"],
             "indexSearchable": True,
             "indexFilterable": True
@@ -37,7 +41,7 @@ student_embedding_middle_config = {
     "vectorizer": "none",
     "properties": [
         {
-            "name": "name",
+            "name": "code",
             "dataType": ["text"],
             "indexSearchable": True,
             "indexFilterable": True
@@ -54,7 +58,7 @@ student_embedding_right_config = {
     "vectorizer": "none",
     "properties": [
         {
-            "name": "name",
+            "name": "code",
             "dataType": ["text"],
             "indexSearchable": True,
             "indexFilterable": True
