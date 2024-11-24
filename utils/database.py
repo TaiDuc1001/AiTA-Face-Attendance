@@ -23,7 +23,10 @@ def create_data_object(
             f"Please choose from {class_names}")
 
     identifier = identifier.lower()
-    schema = client.schema.get()[class_name]
+    for c in schema['classes']:
+        if c['class'] == class_name:
+            schema = c
+            break
     properties = [p['name'] for p in schema['properties']]
     if identifier not in properties:
         raise ValueError(
