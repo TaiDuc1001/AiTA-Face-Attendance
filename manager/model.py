@@ -2,6 +2,7 @@ from pydantic import BaseModel, field_validator
 from typing import List
 import re
 import random
+import numpy as np
 
 def generate_student_code():
     suffix = ''.join(random.choices('0123456789', k=4))
@@ -13,7 +14,7 @@ class Student(BaseModel):
     name: str
     code: str
     gender: bool
-    embeddings: List[str]
+    embeddings: List[np.ndarray]
 
     @field_validator('name')
     def name_must_be_alphabet(cls, value):
@@ -27,3 +28,6 @@ class Student(BaseModel):
         if not re.match(pattern, value):
             raise ValueError('Invalid student code format')
         return value
+    
+    class Config:
+        arbitrary_types_allowed = True
