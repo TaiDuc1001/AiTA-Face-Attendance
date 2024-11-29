@@ -39,17 +39,17 @@ def main():
 
         response = (
             client.query
-            .get("StudentEmbeddingLeft", ["code"])
+            .get("UserEmbeddingLeft", ["code"])
             .with_near_vector({"vector": embeddings[0]})
             .with_limit(2).with_additional(["certainty", "distance"])
             .do()
         )
 
         try:
-            for i in range(len(response['data']['Get']['StudentEmbeddingLeft'])):
-                found = response['data']['Get']['StudentEmbeddingLeft'][i]['code']
-                student_info_response = client.query.get(
-                    "StudentInfo",  
+            for i in range(len(response['data']['Get']['UserEmbeddingLeft'])):
+                found = response['data']['Get']['UserEmbeddingLeft'][i]['code']
+                user_info_response = client.query.get(
+                    "UserInfo",  
                     ["name", "code", "gender"]  
                 ).with_where({
                     "path": ["code"],  
@@ -58,14 +58,14 @@ def main():
                 }).do()
 
                 try:
-                    student_name = student_info_response['data']['Get']['StudentInfo'][0]['name']
-                    certainty = response['data']['Get']['StudentEmbeddingLeft'][i]["_additional"]['certainty']
-                    distance = response['data']['Get']['StudentEmbeddingLeft'][i]["_additional"]['distance']
-                    print(f"Found student info: {student_name} Certainty: {certainty} distance: {distance}")
+                    user_name = user_info_response['data']['Get']['UserInfo'][0]['name']
+                    certainty = response['data']['Get']['UserEmbeddingLeft'][i]["_additional"]['certainty']
+                    distance = response['data']['Get']['UserEmbeddingLeft'][i]["_additional"]['distance']
+                    print(f"Found user info: {user_name} Certainty: {certainty} distance: {distance}")
                 except Exception as e:
-                    print("No student info found for the given ID")
+                    print("No user info found for the given ID")
 
         except Exception as e:
-            print("No student found")
+            print("No user found")
             
         break

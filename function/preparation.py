@@ -1,47 +1,42 @@
+from manager import \
+    nosql_user_embed_left_schema, \
+    nosql_user_embed_middle_schema, \
+    nosql_user_embed_right_schema, \
+    sql_role_schema, \
+    sql_status_schema, \
+    sql_user_schema, \
+    sql_attendance_schema
+from manager import Manager, User, generate_user_code
+from config import nosql_cfg, objdb_cfg, sql_cfg
+from utils import *
+from .setup_nosql import setup_nosql
+from .setup_sql import setup_sql
+from .make_model import get_model
+
 import os
 from os.path import join, exists
 from os import listdir, remove, symlink
-
-from manager import student_embedding_left_config, student_embedding_middle_config, student_embedding_right_config, student_info_config
-from manager import Manager, Student, generate_student_code
-from model import config as models_cfg
-from config import vecdb_cfg, imgdb_cfg
-from utils import *
-
 import weaviate
 from tqdm import tqdm
 import cv2
 import numpy as np
-from insightface import model_zoo
 from insightface.app.common import Face
 from insightface.data import get_image as ins_get_image
 import PIL
 import onnxruntime as ort
+import subprocess
 
 ort.set_default_logger_severity(3)  # 3 = Error level, suppresses warnings
 
+
 def main():
-    os.makedirs(vecdb_cfg.persistence_data_path, exist_ok=True)
-    client = weaviate.Client(
-        embedded_options = weaviate.EmbeddedOptions(
-            host = vecdb_cfg.host,
-            port = vecdb_cfg.port,
-            persistence_data_path=vecdb_cfg.persistence_data_path
-        )
-    )
-    manager = Manager(client=client)
-    for cls_name in manager.class_names:
-        client.schema.delete_class(cls_name)
+    manager = Manager()
+    detector = get_model('Detector')
+    recognizer = get_model('Recognizer')
+    setup_sql()
+    setup_nosql()
 
-    manager.create_class(student_info_config)
-    manager.create_class(student_embedding_left_config)
-    manager.create_class(student_embedding_middle_config)
-    manager.create_class(student_embedding_right_config)
-
-    detector = model_zoo.get_model(models_cfg['Detector']['names'][models_cfg.name])
-    recognizer = model_zoo.get_model(models_cfg['Recognizer']['names'][models_cfg.name])
-
-    image_dir = imgdb_cfg['names'][imgdb_cfg.name]
+    image_dir = objdb_cfg['names'][objdb_cfg.name]
     for person in tqdm(listdir(image_dir)):
         person_dir = join(image_dir, person)
         embeddings = []
@@ -57,14 +52,14 @@ def main():
             embeddings.append(embedding)
 
         embeddings = recognize_postprocess(embeddings)
-        student = Student(
+        user = User(
             name=person,
-            code=generate_student_code(),
+            code=generate_user_code(),
             gender=True,
             embeddings=embeddings
         )
 
-        manager.create_data_object(student_object=student, identifier='code')
+        manager.new_row(user_object=user, identifier='code', type='nosql')
 
 if __name__ == '__main__':
     main()
