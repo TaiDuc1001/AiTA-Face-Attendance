@@ -11,13 +11,19 @@ Recognizer:
     resnet50: ''
     w600k_mbf: '/kaggle/working/AiTA-Face-Attendance/buffalo_sc/w600k_mbf.onnx'
 
-VectorDatabase:
+NoSQLDatabase:
   name: 'weaviate'
   hostname: '127.0.0.1'
   port: 8079
-  persistence_data_path: '/kaggle/working/database'
+  persistence_data_path: '/kaggle/working/nosql_database'
 
-ImageDatabase:
+ObjectDatabase:
   name: 'Faces'
   names:
     Faces: '/kaggle/input/face-recognition-dataset/Dataset/Faces'
+
+SQLDatabase:
+  name: 'sqlite'
+  filename: 'sqlite3.db'
+  persistence_data_path: '/kaggle/working/sql_database'
+  sample_data: 'data/raw'
