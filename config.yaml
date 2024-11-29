@@ -1,3 +1,11 @@
+Camera:
+  name: 'droid-cam'
+  names:
+    droid-cam: 
+      url: 'http://192.168.170.63:4747/video'
+    video:
+      url: '/kaggle/input/face-recognition-dataset/Dataset/Video/1.mp4'
+
 Detector:
   name: 'det_500m'
   path: ''
