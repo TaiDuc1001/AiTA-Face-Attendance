@@ -1,6 +1,6 @@
 from typing import Tuple, List
-import torch
 import cv2
+import numpy as np
 
 def top1(results):
     scores = []
@@ -11,11 +11,14 @@ def top1(results):
     xyxy = map(int, list(xyxy))
     return xyxy
 
-def preprocess(image_path: str,
+def preprocess(image: str,
                cropBox: List[int] = None,
                img_size: Tuple[int, int] = (224, 224),
                verbose: bool = False):
-    image = cv2.imread(image_path)
+    if type(image) == str:
+        image = cv2.imread(image)
+    elif type(image) == np.ndarray:
+        image = image
     if cropBox:
         image = image[cropBox[1]: cropBox[3], cropBox[0]: cropBox[2]]
         if verbose:
