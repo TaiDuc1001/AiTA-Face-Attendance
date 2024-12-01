@@ -12,99 +12,96 @@ from os.path import join, exists
 from tkinter import messagebox
 import argparse
 
-def validate_student_code(
-    student_code: str,
-    sample_data: str
-):
-    if not student_code:
-        print("Student code cannot be empty.")
-        return False
-    user_sample = join(sample_data, 'users.csv')
-    with open(user_sample, 'r') as f:
-        users = pd.read_csv(f)
-        if student_code not in users['code'].values:
-            print(f"Student code {student_code} not found.")
-            return False
+class CameraManager:
+    def __init__(self, config: dict):
+        self.config = config
+        self.faces_dir = config['ObjectDatabase']['dir']
+        self.max_images = self.config['ObjectDatabase']['max_images']
+        self.root = tk.Tk()
+        self.cap = self._init_camera()
+        self.img_count = 0
 
-def is_exists(
-    student_code: str,
-    faces_dir: str
-):
-    faces_dir = join(faces_dir, student_code)
-    if exists(faces_dir):
-        print(f"Student code {student_code} already exists.")
+    def _init_camera(self):
+        url = self.config['Camera']['url']
+        cap = cv2.VideoCapture(url)
+        if not cap.isOpened():
+            print("Error: Could not open video stream")
+            return
+        return cap
+
+    def _validate_student_code(self, student_code: str):
+        sample_data = self.config['SQLDatabase']['sample_data']
+        user_sample = join(sample_data, 'users.csv')
+        with open(user_sample, 'r') as f:
+            users = pd.read_csv(f)
+            if student_code not in users['code'].values:
+                print(f"Student code {student_code} not found.")
+                return False
         return True
-    return False
 
-def capture_images_with_gui(config_path):
-    config = load_yaml(config_path)
-    input_cfg = config['Camera']
-    faces_dir = config['ObjectDatabase']['dir']
-    sample_data = config['SQLDatabase']['sample_data']
+    def _get_student_code(self):
+        self.root.withdraw()
+        student_code = simpledialog.askstring("Input", "Enter your student code:")
+        if not student_code:
+            print("No student code entered. Exiting...")
+            return
+        if not self._validate_student_code(student_code=student_code):
+            return
+        return student_code
 
-    url = input_cfg.names[input_cfg.name]['url']
-    cap = cv2.VideoCapture(url)
-    if not cap.isOpened():
-        print("Error: Could not open video stream")
-        return
-    
-    if not os.path.exists('captured_images'):
-        os.makedirs('captured_images')
-    img_count = 0
-    root = tk.Tk()
-    root.withdraw()  
-    student_code = simpledialog.askstring("Input", "Enter your student code:")
-    if not student_code:
-        print("No student code entered. Exiting...")
-        return
-    if not validate_student_code(student_code=student_code, sample_data=sample_data):
-        return
-    
-    student_code_dir = join(faces_dir, student_code)
+    def _is_overwrite(self, student_code: str):
+        return messagebox.askyesno("Warning", f"Student code {student_code} already exists. Overwrite?")
 
-    if is_exists(student_code=student_code, faces_dir=faces_dir):
-        overwrite = messagebox.askyesno("Overwrite Confirmation", "Do you want to overwrite the existing images?")
-        if overwrite != 'y':
-            continue_capture = messagebox.askyesno("Continue Confirmation", "Do you want to continue capturing images?")
-            if not continue_capture:
-                return
-        else:
-            os.system(f'rm -rf {student_code_dir}')
-    
-    if continue_capture:
+    def _prepare_out_dir(self, student_code: str):
+        student_code_dir = join(self.faces_dir, student_code)
+        if exists(student_code_dir):
+            if not self._is_overwrite(student_code):
+                available_images = [f for f in os.listdir(student_code_dir) if f.endswith('.jpg')]
+                print(f"Available images: {available_images}")
+                print(f"Continuing from image count: {len(available_images)}")
+                self.img_count = len(available_images)
+            else:
+                os.system(f"rm -rf {student_code_dir}")
+
         os.makedirs(student_code_dir)
-        img_count = len(os.listdir(student_code_dir))
+        return student_code_dir
 
-    max_images = 3
-    print(f"Capturing images for {student_code}. Press SPACE to capture, 'q' to quit.")
-    while True:
-        if img_count >= max_images:
-            print("Max images captured")
-            break
-        ret, frame = cap.read()
-        if not ret:
-            print("Failed to grab frame")
-            break
-        cv2.imshow('Frame', frame)
-        key = cv2.waitKey(1) & 0xFF
-        if key == 32:  
-            img_count += 1
-            img_filename = join(student_code_dir, f"{student_code}_{img_count}.jpg")
-            cv2.imwrite(img_filename, frame)
-            print(f"Captured: {img_filename}")
-        elif key == ord('q'):  
-            print("Q key pressed. Exiting...")
-            break
+    def capture(self):
+        student_code = self._get_student_code()
+        if not student_code:
+            return
+        student_code_dir = self._prepare_out_dir(student_code)
+        
+        while True:
+            if self.self.img_count >= self.max_images:
+                print("Max images captured")
+                break
+            ret, frame = self.cap.read()
+            if not ret:
+                print("Failed to grab frame")
+                break
+            cv2.imshow('Frame', frame)
+            key = cv2.waitKey(1) & 0xFF
+            if key == 32:  
+                self.img_count += 1
+                img_filename = join(student_code_dir, f"{self.img_count}.jpg")
+                cv2.imwrite(img_filename, frame)
+                print(f"Captured: {img_filename}")
+            elif key == ord('q'):  
+                print("Q key pressed. Exiting...")
+                break
 
-    cap.release()
-    cv2.destroyAllWindows()
-    root.quit()
+        self.cap.release()
+        cv2.destroyAllWindows()
+        self.root.quit()
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Capture images for face recognition")
-    parser.add_argument("--config", type=str, help="Path to configuration file", default="config.yaml")
+    parser = argparse.ArgumentParser(description="Capture images from camera")
+    parser.add_argument('--config', type=str, default='config.yaml', help='Path to config file')
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = parse_args()
-    capture_images_with_gui(config_path=args.config)
+    config = load_yaml(args.config)
+    camera_manager = CameraManager(config)
+    camera_manager.capture()
