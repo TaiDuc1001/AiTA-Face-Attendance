@@ -16,7 +16,7 @@ from insightface.app.common import Face
 def setup_nosql(config: dict):
     objdb_cfg = config['ObjectDatabase']
     nosql_cfg = config['NoSQLDatabase']
-    models_cfg = config['Models']
+    models_cfg = config
 
     os.makedirs(nosql_cfg.persistence_data_path, exist_ok=True)
     client = weaviate.Client(
