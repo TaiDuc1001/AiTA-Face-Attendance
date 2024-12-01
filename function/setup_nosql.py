@@ -3,7 +3,6 @@ from manager import \
     nosql_user_embed_middle_schema, \
     nosql_user_embed_right_schema, \
     Manager
-from config import nosql_cfg, objdb_cfg
 from .make_model import get_model
 from utils import detect_preprocess, recognize_postprocess
 
@@ -14,7 +13,11 @@ import weaviate
 from insightface.app.common import Face
 
 
-def setup_nosql():
+def setup_nosql(config: dict):
+    objdb_cfg = config['ObjectDatabase']
+    nosql_cfg = config['NoSQLDatabase']
+    models_cfg = config['Models']
+
     os.makedirs(nosql_cfg.persistence_data_path, exist_ok=True)
     client = weaviate.Client(
         embedded_options = weaviate.EmbeddedOptions(
@@ -31,8 +34,8 @@ def setup_nosql():
     manager.create_nosql_table(nosql_user_embed_middle_schema)
     manager.create_nosql_table(nosql_user_embed_right_schema)
 
-    detector = get_model('Detector')
-    recognizer = get_model('Recognizer')
+    detector = get_model(type='Detector', models_cfg=models_cfg)
+    recognizer = get_model('Recognizer', models_cfg=models_cfg)
 
     for person in listdir(objdb_cfg.names[objdb_cfg.name]):
         person_dir = join(objdb_cfg.names[objdb_cfg.name], person)

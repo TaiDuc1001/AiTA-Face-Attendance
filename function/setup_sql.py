@@ -1,4 +1,3 @@
-from config import sql_cfg
 from schemas import \
     role as sql_role_schema, \
     status as sql_status_schema, \
@@ -12,6 +11,7 @@ from sqlite3 import Cursor
 import pandas as pd
 
 def create_table(c: Cursor,
+                 sql_cfg: dict,
                  schema: str) -> None:
     c.execute(schema)
     print(f'{schema} created')
@@ -19,6 +19,7 @@ def create_table(c: Cursor,
     load_sample_data(c, schema_name)
 
 def load_sample_data(c: Cursor,
+                     sql_cfg: dict,
                      schema_name: str) -> None:
     data_path = join(sql_cfg.sample_data, f'{schema_name}.csv')
     if exists(data_path):
@@ -29,7 +30,8 @@ def load_sample_data(c: Cursor,
         print(f'{data_path} not found')
 
 
-def setup_sql():
+def setup_sql(config: dict):
+    sql_cfg = config['SQLDatabase']
     os.makedirs(sql_cfg.persistence_data_path, exist_ok=True)
     conn = sqlite3.connect(join(sql_cfg.persistence_data_path, sql_cfg.filename))
     c = conn.cursor()

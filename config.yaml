@@ -1,5 +1,6 @@
 Camera:
   name: 'droid-cam'
+  url: ''
   names:
     droid-cam: 
       url: 'http://192.168.170.63:4747/video'
@@ -27,6 +28,8 @@ NoSQLDatabase:
 
 ObjectDatabase:
   name: 'Faces'
+  dir: ''
+  max_faces: 3
   names:
     Faces: '/kaggle/input/face-recognition-dataset/Dataset/Faces'
 

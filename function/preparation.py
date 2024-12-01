@@ -7,7 +7,6 @@ from manager import \
     sql_user_schema, \
     sql_attendance_schema
 from manager import Manager, User, generate_user_code
-from config import nosql_cfg, objdb_cfg, sql_cfg
 from utils import *
 from .setup_nosql import setup_nosql
 from .setup_sql import setup_sql

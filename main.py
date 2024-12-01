@@ -1,89 +1,71 @@
+from utils import load_yaml, update_config, save_config_to_yaml, get_latest_config
 import argparse
-import yaml
-from config import BaseConfig
 import subprocess
-import os
+from datetime import datetime
 
 def parse_args():
     parser = argparse.ArgumentParser(description='AiTA Attendance Checking System with Weaviate and InsightFace')
-    parser.add_argument('--mode', type=str, help='Mode to run the system (prepare database or inference)')
-    parser.add_argument('--config', type=str, help='Path to configuration file')
+    # General arguments
+    parser.add_argument('--General.mode', type=str, help="Mode of operation (preparation/inference)", required=True)
+    parser.add_argument('--General.config', type=str, help="Path to configuration file", default='config.yaml')
+    parser.add_argument('--General.load-samples', action='store_true', help="Load default samples")
+    parser.add_argument('--General.temp-dir', type=str, help="Temporary configs directory", default='configs')
 
-    # Vector Database
-    parser.add_argument('--host', type=str, help='Weaviate host')
-    parser.add_argument('--port', type=int, help='Weaviate port')
-    parser.add_argument('--location', type=str, help='Weaviate location directory to store data')
+    # Camera arguments
+    parser.add_argument('--Camera.name', type=str, help="Camera name")
+    parser.add_argument('--Camera.url', type=str, help="Input URL")
 
-    # Image Database
-    parser.add_argument('--dataset', type=str, help='Dataset basename')
-    parser.add_argument('--dataset-path', type=str, help='Dataset path (with basename)')
+    # Detector arguments
+    parser.add_argument('--Detector.name', type=str, help="Detector name")
+    parser.add_argument('--Detector.path', type=str, help="Path for detector")
 
-    # Face Recognizer
-    parser.add_argument('--recognizer-name', type=str, help='Recognizer name')
-    parser.add_argument('--recognizer-path', type=str, help='Path to model weights')
+    # Recognizer arguments
+    parser.add_argument('--Recognizer.name', type=str, help="Recognizer name")
 
-    # Face Detector
-    parser.add_argument('--detector-name', type=str, help='Detector name')
-    parser.add_argument('--detector-path', type=str, help='Path to detector weights')
+    # NoSQLDatabase arguments
+    parser.add_argument('--NoSQLDatabase.name', type=str, help="NoSQL database name")
+    parser.add_argument('--NoSQLDatabase.hostname', type=str, help="NoSQL hostname")
+    parser.add_argument('--NoSQLDatabase.port', type=int, help="NoSQL port")
+    parser.add_argument('--NoSQLDatabase.persistence_data_path', type=str, help="NoSQL persistence data path")
+
+    # ObjectDatabase arguments
+    parser.add_argument('--ObjectDatabase.name', type=str, help="Object database name")
+    parser.add_argument('--ObjectDatabase.dir', type=str, help="Object database directory")
+    parser.add_argument('--ObjectDatabase.max_faces', type=int, help="Object database max faces")
+
+    # SQLDatabase arguments
+    parser.add_argument('--SQLDatabase.name', type=str, help="SQL database name")
+    parser.add_argument('--SQLDatabase.filename', type=str, help="SQL database filename")
+    parser.add_argument('--SQLDatabase.persistence_data_path', type=str, help="SQL persistence data path")
+    parser.add_argument('--SQLDatabase.sample_data', type=str, help="SQL sample data path")
 
     return parser.parse_args()
 
-def update_config():
-    args = parse_args()
-    config_path = args.config
-    with open(config_path, 'r') as file:
-        config = yaml.safe_load(file)
-    
-    config['mode'] = args.mode
-
-    args = BaseConfig(args.__dict__)
-    if args.host is not None:
-        config['VectorDatabase']['host'] = args.host
-    if args.port is not None:
-        config['VectorDatabase']['port'] = args.port
-    if args.location is not None:
-        config['VectorDatabase']['persistence_data_path'] = args.location
-
-    assert args.dataset in config['ImageDatabase']['names'], 'Dataset not found in configuration'
-    config['ImageDatabase']['name'] = args.dataset
-    if args.dataset_path is not None:
-        config['ImageDatabase'][args.dataset] = args.dataset_path
-
-    assert args.recognizer_name in config['Recognizer']['names'], 'Recognizer not found in configuration'
-    config['Recognizer']['name'] = args.recognizer_name
-    if args.recognizer_path is not None:
-        config['Recognizer'][args.recognizer_name] = args.recognizer_path
-
-    assert args.detector_name in config['Detector']['names'], 'Detector not found in configuration'
-    config['Detector']['name'] = args.detector_name
-    if args.detector_path is not None:
-        config['Detector'][args.detector_name] = args.detector_path
-
-    return config
-
-def preparation():
-    cmd = ['python', 'function/preparation.py', '--config', 'temp_config.yaml']
+def preparation(config_path):
+    cmd = ['python', 'function/preparation.py', '--config', config_path]
     subprocess.run(cmd)
 
-def inference():
-    cmd = ['python', 'function/inference.py', '--config', 'temp_config.yaml']
+def inference(config_path):
+    cmd = ['python', 'function/inference.py', '--config', config_path]
     subprocess.run(cmd)
 
 def main():
-    config = update_config()
-    mode = config['mode']
-    assert mode in ['preparation', 'inference'], 'Invalid mode, please choose between \'preparation\' or \'inference\''
+    args = parse_args()
+    config = load_yaml(config_path=args.General.config)
+    update_config(config, args)
 
-    with open('temp_config.yaml', 'w') as file:
-        yaml.dump(config, file)
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    temp_config_path = f'{args.General.temp_dir}/config_{timestamp}.yaml'
+    save_config_to_yaml(config, temp_config_path)
 
+    config_path = get_latest_config()
+    assert config_path is not None, 'No configuration file found'
+
+    mode = args.General.mode
     if mode == 'preparation':
-        preparation()
-
+        preparation(config_path=config_path)
     elif mode == 'inference':
-        inference()
-
-    os.remove('temp_config.yaml')
+        inference(config_path=config_path)
 
 if __name__ == '__main__':
     main()

@@ -5,12 +5,15 @@ from insightface.app.common import Face
 from tqdm import tqdm
 import cv2
 import os
-from config import vecdb_cfg, imgdb_cfg
-from model import config as models_cfg
 import weaviate
+import argparse
 
 
-def main():
+def main(config: dict):
+    imgdb_cfg = config['ObjectDatabase']
+    vecdb_cfg = config['NoSQLDatabase']
+    models_cfg = config['Models']
+
     os.makedirs(vecdb_cfg.persistence_data_path, exist_ok=True)
     client = weaviate.Client(
         embedded_options = weaviate.EmbeddedOptions(
@@ -69,3 +72,12 @@ def main():
             print("No user found")
             
         break
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', type=str, help="Path to configuration file", default='config.yaml')
+    return parser.parse_args()
+
+if __name__ == '__main__':
+    args = parse_args()
+    main(args.config)
