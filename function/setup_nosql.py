@@ -16,7 +16,6 @@ from insightface.app.common import Face
 def setup_nosql(config: dict):
     objdb_cfg = config['ObjectDatabase']
     nosql_cfg = config['NoSQLDatabase']
-    models_cfg = config
 
     os.makedirs(nosql_cfg.persistence_data_path, exist_ok=True)
     client = weaviate.Client(
@@ -34,8 +33,8 @@ def setup_nosql(config: dict):
     manager.create_nosql_table(nosql_user_embed_middle_schema)
     manager.create_nosql_table(nosql_user_embed_right_schema)
 
-    detector = get_model(type='Detector', models_cfg=models_cfg)
-    recognizer = get_model('Recognizer', models_cfg=models_cfg)
+    detector = get_model(type='Detector', models_cfg=config)
+    recognizer = get_model('Recognizer', models_cfg=config)
 
     for person in listdir(objdb_cfg.names[objdb_cfg.name]):
         person_dir = join(objdb_cfg.names[objdb_cfg.name], person)

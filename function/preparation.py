@@ -24,17 +24,23 @@ from insightface.data import get_image as ins_get_image
 import PIL
 import onnxruntime as ort
 import onnx
-
+import argparse
 
 ort.set_default_logger_severity(3)  # 3 = Error level, suppresses warnings
 
-
-def main():
+def main(config: dict):
     manager = Manager()
-    detector = get_model('Detector')
-    recognizer = get_model('Recognizer')
+    detector = get_model(type='Detector', models_cfg=config)
+    recognizer = get_model(type='Recognizer', models_cfg=config)
     setup_sql()
     setup_nosql()
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Prepare the database')
+    parser.add_argument('--config', type=str, default='config.yaml', help='Path to the config file')
+    return parser.parse_args()
+
 if __name__ == '__main__':
+    args = parse_args()
+    config = load_yaml(args.config)
     main()
