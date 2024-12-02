@@ -8,7 +8,7 @@ class Detector:
         return cls._instance
     
     def __init__(self, models_cfg):
-        self.model = model_zoo.get_model(models_cfg['Detector']['names'][models_cfg.name])
+        self.model = model_zoo.get_model(models_cfg['Detector']['names'][models_cfg['Detector']['name']])
 
 class Recognizer:
     _instance = None
@@ -18,7 +18,7 @@ class Recognizer:
         return cls._instance
     
     def __init__(self, models_cfg):
-        self.model = model_zoo.get_model(models_cfg['Recognizer']['names'][models_cfg.name])
+        self.model = model_zoo.get_model(models_cfg['Recognizer']['names'][models_cfg['Recognizer']['name']])
 
 def get_model(type: str, models_cfg: dict):
     if type == 'Detector':
