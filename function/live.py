@@ -3,6 +3,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from utils import load_yaml
+from function.compare import compare
 
 import cv2
 import tkinter as tk
@@ -11,18 +12,20 @@ import pandas as pd
 from os.path import join, exists
 from tkinter import messagebox
 import argparse
+from insightface.app.common import Face
 
 class CameraManager:
     def __init__(self, config: dict):
         self.config = config
         self.faces_dir = config['ObjectDatabase']['dir']
-        self.max_images = self.config['ObjectDatabase']['max_images']
-        self.root = tk.Tk()
+        self.max_faces = self.config['ObjectDatabase']['max_faces']
         self.cap = self._init_camera()
         self.img_count = 0
 
     def _init_camera(self):
         url = self.config['Camera']['url']
+        if not url:
+            url = self.config['Camera']['names'][self.config['Camera']['name']]['url']
         cap = cv2.VideoCapture(url)
         if not cap.isOpened():
             print("Error: Could not open video stream")
@@ -61,19 +64,22 @@ class CameraManager:
                 print(f"Continuing from image count: {len(available_images)}")
                 self.img_count = len(available_images)
             else:
-                os.system(f"rm -rf {student_code_dir}")
+                print(f"Overwriting existing images for student code: {student_code}")
+                for f in os.listdir(student_code_dir):
+                    os.remove(join(student_code_dir, f))
 
-        os.makedirs(student_code_dir)
+        os.makedirs(student_code_dir, exist_ok=True)
         return student_code_dir
 
     def capture(self):
+        self.root = tk.Tk()
         student_code = self._get_student_code()
         if not student_code:
             return
         student_code_dir = self._prepare_out_dir(student_code)
         
         while True:
-            if self.self.img_count >= self.max_images:
+            if self.img_count >= self.max_faces:
                 print("Max images captured")
                 break
             ret, frame = self.cap.read()
@@ -95,6 +101,35 @@ class CameraManager:
         cv2.destroyAllWindows()
         self.root.quit()
 
+    def live(self):
+        while True:
+            ret, frame = self.cap.read()
+            if not ret:
+                print("Failed to grab frame")
+                break
+            results = compare(frame, self.config)
+            if not results:
+                cv2.imshow('Frame', frame)
+                key = cv2.waitKey(1) & 0xFF
+                if key == ord('q'):
+                    print("Q key pressed. Exiting...")
+                    break
+                continue
+            student_code, certainty, bbox = results
+            student_code = student_code if student_code else "Unknown"
+            x1, y1, x2, y2 = map(int, bbox[:4])
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.putText(frame, f"{student_code} ({certainty:.2f})", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+            cv2.imshow('Frame', frame)
+
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord('q'):
+                print("Q key pressed. Exiting...")
+                break
+
+        self.cap.release()
+        cv2.destroyAllWindows()
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Capture images from camera")
     parser.add_argument('--config', type=str, default='config.yaml', help='Path to config file')
@@ -104,4 +139,4 @@ if __name__ == "__main__":
     args = parse_args()
     config = load_yaml(args.config)
     camera_manager = CameraManager(config)
-    camera_manager.capture()
+    camera_manager.live()
