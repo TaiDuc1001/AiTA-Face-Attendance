@@ -1,0 +1,21 @@
+python main.py \
+--General.mode preparation \
+--General.config config.yaml \
+--General.load_samples \
+--General.temp_dir configs \
+--Camera.name droid-cam \
+--Camera.url http://192.168.1.42:4747/video \
+--Detector.name det_500m \
+--Detector.path models/retinaface.pth \
+--Recognizer.name w600k_mbf \
+--NoSQLDatabase.name weaviate \
+--NoSQLDatabase.hostname 127.0.0.1 \
+--NoSQLDatabase.port 8079 \
+--NoSQLDatabase.persistence_path nosql_database \
+--ObjectDatabase.name face_db \
+--ObjectDatabase.dir data/faces \
+--ObjectDatabase.max_faces 3 \
+--SQLDatabase.name sqlite \
+--SQLDatabase.filename sqlite3.db \
+--SQLDatabase.persistence_path sql_database \
+--SQLDatabase.sample_data data/raw
