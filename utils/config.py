@@ -1,5 +1,12 @@
 import os
 import yaml
+import argparse
+
+def convert_to_dict(obj):
+    if isinstance(obj, argparse.Namespace): 
+        return {k: convert_to_dict(v) for k, v in vars(obj).items()}
+    else:
+        return obj
 
 def load_yaml(config_path):
     with open(config_path, 'r') as file:
@@ -14,14 +21,6 @@ def save_config_to_yaml(config, output_path):
         yaml.dump(config, file, sort_keys=False)
     print(f'New configuration saved to {output_path}')
 
-def update_config(config, args):
-    for key, value in vars(args).items():
-        if value is not None:
-            keys = key.split('.')
-            sub_config = config
-            for part in keys[:-1]:
-                sub_config = sub_config.get(part, {})
-            sub_config[keys[-1]] = value
 
 def get_latest_config():
     config_files = [f for f in os.listdir() if f.endswith('.yaml')]
