@@ -1,21 +1,23 @@
+# Run on kaggle
 python main.py \
 --General.mode preparation \
 --General.config config.yaml \
 --General.load_samples \
 --General.temp_dir configs \
---Camera.name droid-cam \
---Camera.url http://192.168.1.42:4747/video \
+--Camera.name video \
+--Camera.url /kaggle/input/attend-aita-sample-video/6089852716074.mp4 \
 --Detector.name det_500m \
---Detector.path models/retinaface.pth \
+--Detector.path /kaggle/working/AiTA-Face-Attendance/model/buffalo_sc/det_500m.onnx \
 --Recognizer.name w600k_mbf \
+--Recognizer.path /kaggle/working/AiTA-Face-Attendance/model/buffalo_sc/w600k_mbf.onnx \
 --NoSQLDatabase.name weaviate \
 --NoSQLDatabase.hostname 127.0.0.1 \
 --NoSQLDatabase.port 8079 \
 --NoSQLDatabase.persistence_path nosql_database \
---ObjectDatabase.name face_db \
---ObjectDatabase.dir data/faces \
+--ObjectDatabase.name Faces \
+--ObjectDatabase.dir /kaggle/working/AiTA-Face-Attendance/data/faces \
 --ObjectDatabase.max_faces 3 \
 --SQLDatabase.name sqlite \
 --SQLDatabase.filename sqlite3.db \
 --SQLDatabase.persistence_path sql_database \
---SQLDatabase.sample_data data/raw
+--SQLDatabase.sample_data /kaggle/working/AiTA-Face-Attendance/data/raw
