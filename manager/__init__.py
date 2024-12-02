@@ -11,6 +11,7 @@ from .model import UserInfo, UserEmbedding
 
 from typing import Union
 from weaviate import Client
+import weaviate
 
 class Manager:
     _instance = None
@@ -19,10 +20,15 @@ class Manager:
             cls._instance = super(Manager, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self, client: Client = None):    
-        if not hasattr(self, 'client'):
-            self.client = client
-
+    def __init__(self, config: dict, client: Client = None):    
+        self.config = config
+        self.client = weaviate.Client(
+            embedded_options = weaviate.EmbeddedOptions(
+                hostname = config['NoSQLDatabase']['hostname'],
+                port = config['NoSQLDatabase']['port'],
+                persistence_data_path = config['NoSQLDatabase']['persistence_data_path']
+            )
+        ) if client is None else client
     def get_class_names(self):
         return [
             nosql_user_embed_left_schema.class_name,
