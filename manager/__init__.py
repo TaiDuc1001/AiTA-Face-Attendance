@@ -7,7 +7,7 @@ from schemas import \
     sql_user_schema, \
     sql_attendance_schema
 from utils import create_class, create_data_object
-from .model import UserInfo, UserEmbedding
+from .model import UserInfo, UserEmbedding, generate_user_code
 
 from typing import Union
 from weaviate import Client
@@ -22,18 +22,21 @@ class Manager:
 
     def __init__(self, config: dict, client: Client = None):    
         self.config = config
+        # self.client = weaviate.Client(
+        #     embedded_options = weaviate.EmbeddedOptions(
+        #         hostname = config['NoSQLDatabase']['hostname'],
+        #         port = config['NoSQLDatabase']['port'],
+        #         persistence_data_path = config['NoSQLDatabase']['persistence_data_path']
+        #     )
+        # ) if client is None else client
         self.client = weaviate.Client(
-            embedded_options = weaviate.EmbeddedOptions(
-                hostname = config['NoSQLDatabase']['hostname'],
-                port = config['NoSQLDatabase']['port'],
-                persistence_data_path = config['NoSQLDatabase']['persistence_data_path']
-            )
+            url=f"http://{self.config['NoSQLDatabase']['hostname']}:{self.config['NoSQLDatabase']['port']}"
         ) if client is None else client
     def get_class_names(self):
         return [
-            nosql_user_embed_left_schema.class_name,
-            nosql_user_embed_middle_schema.class_name,
-            nosql_user_embed_right_schema.class_name,
+            nosql_user_embed_left_schema['class'],
+            nosql_user_embed_middle_schema['class'],
+            nosql_user_embed_right_schema['class'],
         ]
     
     def create_nosql_table(self, config):

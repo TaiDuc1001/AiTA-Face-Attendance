@@ -3,7 +3,7 @@ Camera:
   url: ''
   names:
     droid-cam: 
-      url: 'http://192.168.1.42:4747/video'
+      url: 'http://192.168.1.4:4747/video'
     video:
       url: '/kaggle/input/face-recognition-dataset/Dataset/Video/1.mp4'
 
@@ -23,7 +23,7 @@ Recognizer:
 NoSQLDatabase:
   name: 'weaviate'
   hostname: '127.0.0.1'
-  port: 8079
+  port: 8080
   persistence_data_path: 'nosql_database'
 
 ObjectDatabase:
@@ -31,7 +31,7 @@ ObjectDatabase:
   dir: ''
   max_faces: 3
   names:
-    Faces: 'Dataset\Faces'
+    Faces: 'data\\faces'
 
 SQLDatabase:
   name: 'sqlite'
