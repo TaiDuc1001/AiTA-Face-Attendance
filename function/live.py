@@ -14,12 +14,15 @@ from queue import Queue
 import threading
 import onnxruntime as ort
 import time
+import tkinter as tk
+from tkinter import simpledialog, messagebox
 
 ort.set_default_logger_severity(3)
+
 class CameraManager:
     def __init__(self, config: dict):
         self.config = config
-        self.faces_dir = config['ObjectDatabase']['dir']
+        self.faces_dir = config['ObjectDatabase']['names'][config['ObjectDatabase']['name']]
         self.max_faces = self.config['ObjectDatabase']['max_faces']
         self.img_count = 0
         self.skip_frames = 10
@@ -153,6 +156,69 @@ class CameraManager:
         self.cap.release()
         cv2.destroyAllWindows()
 
+    def capture(self):
+        root = tk.Tk()
+        root.withdraw()
+        while True:
+            student_code = simpledialog.askstring("Input", "Enter student code:")
+            
+            if not student_code:
+                messagebox.showerror("Error", "Student code cannot be empty")
+                if not messagebox.askretrycancel("Retry", "Do you want to try again?"):
+                    root.destroy()
+                    return
+                continue
+            
+            user_data = pd.read_csv(join(self.config['SQLDatabase']['sample_data'], 'users.csv'))
+            if student_code not in user_data['code'].values:
+                messagebox.showerror("Error", "Student code does not exist")
+                if not messagebox.askretrycancel("Retry", "Do you want to try again?"):
+                    root.destroy()
+                    return
+                continue
+            
+            break
+        
+        student_dir = join(self.faces_dir, student_code)
+        if exists(student_dir):
+            if messagebox.askyesno("Overwrite", "Student already has images. Overwrite?"):
+                for file in os.listdir(student_dir):
+                    os.remove(join(student_dir, file))
+            else:
+                return
+        else:
+            os.makedirs(student_dir)
+        
+        root.destroy()
+        
+        self.running = True
+        cv2.namedWindow("Capture", cv2.WINDOW_NORMAL)
+        print("Press SPACE to capture image, Q to quit")
+        
+        while self.running:
+            ret, frame = self.cap.read()
+            if not ret:
+                print("Failed to grab frame")
+                break
+            
+            cv2.imshow("Capture", frame)
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord(' '):
+                img_path = join(student_dir, f"{self.img_count}.jpg")
+                cv2.imwrite(img_path, frame)
+                print(f"Captured {img_path}")
+                self.img_count += 1
+                if self.img_count >= self.max_faces:
+                    print("Max faces captured")
+                    break
+            elif key == ord('q'):
+                print("Q key pressed. Exiting...")
+                break
+        
+        self.running = False
+        self.cap.release()
+        cv2.destroyAllWindows()
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Capture images from camera")
     parser.add_argument('--config', type=str, default='config.yaml', help='Path to config file')
@@ -162,4 +228,5 @@ if __name__ == "__main__":
     args = parse_args()
     config = load_yaml(args.config)
     camera_manager = CameraManager(config)
-    camera_manager.live()
+    camera_manager.capture()
+    # camera_manager.live()
