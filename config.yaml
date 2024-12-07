@@ -31,7 +31,7 @@ ObjectDatabase:
   dir: ''
   max_faces: 3
   names:
-    Faces: 'data\\faces'
+    Faces: 'data/faces'
 
 SQLDatabase:
   name: 'sqlite'
