@@ -7,11 +7,8 @@ from function.compare import compare
 from function.make_model import get_model
 
 import cv2
-import tkinter as tk
-from tkinter import simpledialog
 import pandas as pd
 from os.path import join, exists
-from tkinter import messagebox
 import argparse
 from queue import Queue
 import threading
@@ -32,26 +29,8 @@ class CameraManager:
         self.result_queue = Queue(maxsize=5)
         self.running = False
         
-        
-        self.root = tk.Tk()
-        self.root.withdraw()  
-        
-        
-        self.student_code = self._get_student_code()
-        if not self.student_code:
-            self.root.destroy()
-            sys.exit(0)
-            
-        
-        self.output_dir = self._prepare_out_dir(self.student_code)
-        if not self.output_dir:
-            self.root.destroy()
-            sys.exit(0)
-            
-        
         self.cap = self._init_camera()
         if self.cap is None:
-            self.root.destroy()
             sys.exit(1)
             
         self.running = True
@@ -63,59 +42,14 @@ class CameraManager:
         print(f"Attempting to open camera at: {url}")
         cap = cv2.VideoCapture(url)
         if not cap.isOpened():
-            messagebox.showerror("Error", "Could not open video stream")
             return None
-            
         
         ret, frame = cap.read()
         if not ret or frame is None:
-            messagebox.showerror("Error", "Could not read from camera")
             return None
             
         print("Camera initialized successfully")
         return cap
-
-
-    def _validate_student_code(self, student_code: str):
-        sample_data = self.config['SQLDatabase']['sample_data']
-        user_sample = join(sample_data, 'users.csv')
-        with open(user_sample, 'r') as f:
-            users = pd.read_csv(f)
-            if student_code not in users['code'].values:
-                messagebox.showerror("Error", f"Student code {student_code} not found.")
-                return False
-        return True
-
-    def _get_student_code(self):
-        while True:
-            student_code = simpledialog.askstring("Input", "Enter your student code:")
-            if not student_code:
-                return None
-            if self._validate_student_code(student_code=student_code):
-                return student_code
-            retry = messagebox.askretrycancel("Error", "Invalid student code. Try again?")
-            if not retry:
-                return None
-
-    def _is_overwrite(self, student_code: str):
-        return messagebox.askyesno("Warning", f"Student code {student_code} already exists. Overwrite?")
-
-    def _prepare_out_dir(self, student_code: str):
-        student_code_dir = join(self.faces_dir, student_code)
-        if exists(student_code_dir):
-            if not self._is_overwrite(student_code):
-                available_images = [f for f in os.listdir(student_code_dir) if f.endswith('.jpg')]
-                print(f"Available images: {available_images}")
-                print(f"Continuing from image count: {len(available_images)}")
-                self.img_count = len(available_images)
-                return student_code_dir
-            else:
-                print(f"Overwriting existing images for student code: {student_code}")
-                for f in os.listdir(student_code_dir):
-                    os.remove(join(student_code_dir, f))
-        
-        os.makedirs(student_code_dir, exist_ok=True)
-        return student_code_dir
 
     def _frame_producer(self):
         print("Frame producer started")
@@ -185,7 +119,7 @@ class CameraManager:
         producer_thread.start()
         consumer_thread.start()
 
-        
+        # Create OpenCV window
         cv2.namedWindow("Frame", cv2.WINDOW_NORMAL)
         
         print("Starting main loop")
@@ -205,7 +139,7 @@ class CameraManager:
                     x1, y1, x2, y2 = map(int, results[-1])
                     cv2.rectangle(frame, (x1, y1), (2*x2 - x1, y2), (0, 255, 0), 2)
                     cv2.putText(frame, f"{student_code} ({certainty:.2f})", (x1, y1 - 10), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
                 
                 cv2.imshow("Frame", frame)
 
@@ -218,16 +152,6 @@ class CameraManager:
         print("Cleaning up...")
         self.cap.release()
         cv2.destroyAllWindows()
-        self.root.destroy()
-
-    def on_closing(self):
-        self.running = False
-        self.cap.release()
-        cv2.destroyAllWindows()
-        self.root.destroy()
-
-    def _start_tkinter(self):
-        self.root.mainloop()
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Capture images from camera")
